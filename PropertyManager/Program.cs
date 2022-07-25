@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PropertyManager.Models.AutoMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,16 +31,6 @@ builder.Services.AddSwaggerGen(options =>
             Url = new Uri("https://example.com/license")
         }
     });
-    
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-    {
-        Description = "Standard Authorization Header using the Bearer scheme",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
-    });
-    
-    options.OperationFilter<SecurityRequirementsOperationsFilter>();
 
     // using System.Reflection;
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -52,20 +43,14 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseContext"))
 );
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey =
-            new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
-        ValidateIssuer = false,
-        ValidateAudience = false
-    };
+    options.LoginPath = "/Auth/login";
 });
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

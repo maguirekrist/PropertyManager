@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyManager.Db;
@@ -17,6 +19,7 @@ public class AuthController : Controller
     private readonly DatabaseContext _dbContext;
     private readonly IMapper _mapper;
 
+
     public AuthController(
         ILogger<AuthController> logger, 
         DatabaseContext dbContext,
@@ -25,7 +28,13 @@ public class AuthController : Controller
         _logger = logger;
         _dbContext = dbContext;
         _mapper = mapper;
-    } 
+    }
+
+    [HttpGet("register")]
+    public IActionResult Register()
+    {
+        return View();
+    }
     
     [HttpPost("register")]
     public async Task<ActionResult<Resident>> Register(RegisterViewModel request)
@@ -36,25 +45,34 @@ public class AuthController : Controller
         return Ok(user);
     }
 
-    [HttpPost("login")]
-    public async Task<ActionResult<Resident>> Login(LoginViewModel request)
+    [HttpGet("login")]
+    public IActionResult Login([FromQuery] string? returnUrl)
     {
-        var user = await _dbContext.Residents.Where(val => val.Email == request.Email).FirstOrDefaultAsync();
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult> Login([FromForm] LoginViewModel request, [FromQuery] string? returnUrl)
+    {
+        
+
+        Resident user = await _dbContext.Residents.Where(val => val.Email == request.Email).FirstOrDefaultAsync();
         if (user != null)
         {
-            return Ok(user);   
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim("UserId", user.Id.ToString())
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            await HttpContext.SignInAsync(claimsPrincipal);
+            return Redirect(returnUrl);   
         }
         else
         {
-            return NotFound();
+            TempData["Error"] = "Invalid username or password.";
+            return View("login");
         }
-    }
-
-    private string CreateToken(Resident resident)
-    {
-        var token = new JwtSecurityToken();
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-        return jwt;
     }
 }   

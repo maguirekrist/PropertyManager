@@ -2,6 +2,6 @@ namespace PropertyManager.Models;
 
 public class LoginViewModel
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string? Email { get; set; } = String.Empty;
+    public string? Password { get; set; } = String.Empty;
 }
