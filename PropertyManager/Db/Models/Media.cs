@@ -11,7 +11,7 @@ namespace PropertyManager.Models
 
 	public class Media
 	{
-		public long ID { get; set; }
+		public long Id { get; set; }
 		public MediaTypes MediaType { get; set; }
 		public string url { get; set; }
 
