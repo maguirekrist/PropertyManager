@@ -37,12 +37,33 @@ public class AuthController : Controller
     }
     
     [HttpPost("register")]
-    public async Task<ActionResult<Resident>> Register(RegisterViewModel request)
+    public async Task<ActionResult> Register([FromForm] RegisterViewModel request)
     {
-        var user = Resident.CreateResident(request);
-        await _dbContext.Residents.AddAsync(user);
-        await _dbContext.SaveChangesAsync();
-        return Ok(user);
+        if(ModelState.IsValid)
+        {
+
+            var user = Resident.CreateResident(request);
+            await _dbContext.Residents.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim("UserId", user.Id.ToString())
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            await HttpContext.SignInAsync(claimsPrincipal);
+            return Redirect("/");
+        } else
+        {
+            return View("register");
+        }
+    }
+
+    [HttpGet("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync();
+        return Redirect("/Auth/login");
     }
 
     [HttpGet("login")]
@@ -58,7 +79,7 @@ public class AuthController : Controller
         
 
         Resident user = await _dbContext.Residents.Where(val => val.Email == request.Email).FirstOrDefaultAsync();
-        if (user != null)
+        if (user != null && Utility.Security.VerifyPasswordHash(request.Password, System.Text.Encoding.UTF8.GetBytes(user.Password), System.Text.Encoding.UTF8.GetBytes(user.PasswordSalt)))
         {
             List<Claim> claims = new List<Claim>
             {
@@ -75,4 +96,6 @@ public class AuthController : Controller
             return View("login");
         }
     }
+
+
 }   

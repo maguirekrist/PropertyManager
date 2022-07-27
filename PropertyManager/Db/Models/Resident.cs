@@ -26,34 +26,18 @@ namespace PropertyManager.Models
 
 		public static Resident CreateResident(RegisterViewModel resident)
 		{
-			CreatePasswordHash(resident.Password, out byte[] passwordHash, out byte[] passSalt);
+			Utility.Security.CreatePasswordHash(resident.Password, out byte[] passHash, out byte[] passSalt);
 
 			return new Resident
 			{
 				Email = resident.Email,
 				FirstName = resident.FirstName,
 				LastName = resident.LastName,
-				Password = System.Text.Encoding.UTF8.GetString(passwordHash),
+				Password = System.Text.Encoding.UTF8.GetString(passHash),
 				PasswordSalt = System.Text.Encoding.UTF8.GetString(passSalt)
 			};
 		}
-		
-		private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passSalt)
-		{
-			using (var hmac = new HMACSHA512())
-			{
-				passSalt = hmac.Key;
-				passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-			}
-		}
 
-		private static bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-		{
-			using (var hmac = new HMACSHA512(passwordSalt))
-			{
-				var computeHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-				return computeHash.SequenceEqual(passwordHash);
-			}
-		}
+		
 	}
 }

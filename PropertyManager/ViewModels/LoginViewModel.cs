@@ -1,7 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace PropertyManager.Models;
 
 public class LoginViewModel
 {
-    public string? Email { get; set; } = String.Empty;
-    public string? Password { get; set; } = String.Empty;
+    [EmailAddress]
+    public string Email { get; set; }
+    [DataType(DataType.Password)]
+    public string Password { get; set; }
 }
