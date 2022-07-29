@@ -1,9 +1,135 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@using System.Security.Claims
+@using PropertyManager.Utility
+@{
+    var conditionDict = new Dictionary<Condition, (string Display, string Color)>
+    {
+        { Condition.GOOD, ("Good", "success") },
+        { Condition.LOST, ("Missing", "warning")},
+        { Condition.DAMAGED, ("Damaged", "danger")},
+        { Condition.STOLEN, ("Stolen", "danger")},
+        { Condition.SALE, ("For Sale", "primary")}
+    };
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    var priorityDict = new Dictionary<Priority, string>
+    {
+        { Priority.LOW, "secondary" },
+        { Priority.MED , "warning" },
+        { Priority.HIGH , "danger" }
+    };
+    
+    ViewData["Title"] = "Home Page";
+    @model IndexViewModel  
+    
+}
+@if (Model != null)
+{
+ <div class="">
+     @if (Model.ActiveAlert != null)
+     {
+         <div class="my-4 alert alert-@priorityDict.GetValueOrDefault(Model.ActiveAlert.Priority)">
+             <h4 class="fs-4 mb-1 fw-bold">@Model.ActiveAlert.Title</h4>
+             <div class="mb-2 fst-italic fs-6">@Model.ActiveAlert.CreatedOn.ToLongDateString()</div>
+             <p class="mb-0">@Model.ActiveAlert.Description</p>
+         </div>
+     }
+     <div class="d-flex align-items-center my-4">
+         <div>
+             <h1 class="fs-1">Welcome, @User.GetUserName()</h1>
+         </div>
+     </div>
+     <div class="row g-3">
+         <div class="col-12 col-md-8">
+             <div class="d-flex align-items-center mb-3">
+                 <div>
+                     <h2 class="fs-3">Your proprety</h2>
+                 </div>
+                 <div class="ms-auto">
+                     <a class="btn btn-sm btn-outline-primary" asp-controller="Property" asp-action="New">Add Property</a>
+                 </div>
+             </div>
+             @if (Model != null && Model.Properties.Count > 0)
+             {
+                 @foreach (Property property in Model.Properties)
+                 {
+                     <div class="card mb-3">
+                         <div class="row g-0">
+                             @if (property != null && property.Mediae != null && property.Mediae.Count() > 0)
+                             {
+                                 <div class="col-md-4">
+                                     <img src="data:image/@property.Mediae.First().FileType;base64,@Convert.ToBase64String(property.Mediae.First().Data)" class="img-fluid rounded-start" alt="...">
+                                 </div>
+                             }
+                             <div class="@(property != null && property.Mediae != null && property.Mediae.Count() > 0 ? "col-md-8" : "col-12")">
+                                 <div class="card-body">
+                                     <div class="d-flex align-items-center">
+                                         <div>
+                                             <a asp-controller="Property" asp-action="ViewProperty" asp-route-propertyId="@property.Id" class="card-title  fs-4">@property.Title</a>
+                                         </div>
+                                         <div class="ms-auto">
+                                             <span class="text-muted">condition: </span><span class="text-@conditionDict.GetValueOrDefault(property.Condition).Color">@conditionDict.GetValueOrDefault(property.Condition).Display</span>
+                                         </div>
+                                     </div>
+                                     <p class="card-text mb-0"><small class="text-muted">Created On @property.CreatedOn.ToLongDateString()</small></p>
+                                     <p class="card-text">@(property.Description.Length > 0 ? property.Description : "No description for this item.")</p>
+                                     <div class="position-absolute bottom-0 end-0 d-flex p-2">
+                                         <a class="btn btn-sm btn-primary me-2" asp-controller="Property" asp-action="EditProperty" asp-route-id="@property.Id">Edit</a>
+                                         <a class="btn btn-sm btn-danger" asp-controller="Property" asp-action="DeleteProperty" asp-route-id="@property.Id">Delete</a>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 }
+             }
+             else
+             {
+                 <div class="card bg-light">
+                     <div class="card-body text-center">
+                         <h5 class="fs-4">No Property...</h5>
+                         <a asp-controller="Property" asp-action="New" class="btn btn-primary btn-sm">Add Property</a>
+                     </div>
+                 </div>
+             }
+         </div>
+         <div class="col-12 col-md-4">
+             <div class="d-flex align-items-center mb-3">
+                 <div>
+                     <h2 class="fs-3">My Guests</h2>
+                 </div>
+                 <div class="ms-auto">
+                     <a asp-controller="Home" asp-action="AddGuest" class="btn btn-sm btn-outline-primary">Add Guests</a>
+                 </div>
+             </div>
+             <div>
+                 @if (Model != null && Model.Guests.Count > 0)
+                 {
+                     <ul class="list-group">
+                         @foreach (Guest guest in @Model.Guests)
+                         {
+                             <li class="list-group-item d-flex justify-content-between align-items-start">
+                                 <div class="me-auto">
+                                     <div class="fw-bold">@guest.FirstName @guest.LastName</div>
+                                     Last logged in @guest.LastLoggedIn.ToLongDateString()
+                                 </div>
+                                 <span>
+                                     <a asp-controller="Home" asp-action="RemoveGuest">Remove</a>
+                                 </span>
+                             </li>
+                         }
+                     </ul>
+                 }
+                 else
+                 {
+                     <div class="card bg-light">
+                         <div class="card-body text-center">
+                             <h5 class="fs-4">No Guests...</h5>
+                             <a asp-controller="Home" asp-action="AddGuest" class="btn btn-primary btn-sm">Add Guests</a>
+                         </div>
+                     </div>
+                 }
+             </div>
+         </div>
+     </div>
+ </div>   
+}
 

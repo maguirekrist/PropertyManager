@@ -1,0 +1,36 @@
+@using PropertyManager.Utility
+@model EditPropertyViewModel
+@{
+    var returnUrl = ViewData["ReturnUrl"] as string;
+    var error = TempData["Error"] as string;
+}
+<h1 class="fs-1">Edit Property</h1>
+@if (!string.IsNullOrEmpty(error))
+{
+    <h5 class="alert alert-danger">@error</h5>
+}
+<form asp-controller="Property" asp-action="EditProperty" asp-route-id="" asp-route-returnurl="/" enctype="multipart/form-data" method="post">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Title</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger text-sm"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Condition" class="form-label">Condition</label>
+        <select asp-items="Html.GetEnumSelectList<Condition>()" asp-for="Condition" class="form-select">
+        </select>
+        <span asp-validation-for="Condition" class="text-danger text-sm"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Description</label>
+        <textarea asp-for="Description" class="form-select">
+         </textarea>
+        <span asp-validation-for="Description" class="text-danger text-sm"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="FormFiles" class="form-label">Image</label>
+        <input asp-for="FormFiles" type="file" class="form-control" multiple/>
+        <span asp-validation-for="FormFiles" class="text-danger text-sm"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>

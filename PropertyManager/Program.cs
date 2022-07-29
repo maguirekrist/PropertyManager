@@ -10,7 +10,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen(options =>
@@ -44,15 +45,17 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseContext"))
 );
 
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
 {
+    options.AccessDeniedPath = "/Auth/denied";
     options.LoginPath = "/Auth/login";
-});
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.SuppressModelStateInvalidFilter = true;
+    options.Events = new CookieAuthenticationEvents()
+    {
+        OnValidatePrincipal = async context =>
+        {
+            await Task.CompletedTask;
+        }
+    };
 });
 
 var app = builder.Build();
@@ -67,10 +70,19 @@ if (!app.Environment.IsDevelopment())
 } 
 else
 {
-    
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.Use(async (context, next) =>
+{
+    await next();
+    if (context.Response.StatusCode == 404)
+    {
+        context.Request.Path = "/404";
+        await next();
+    }
+});
 
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -83,6 +95,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.Run();
 

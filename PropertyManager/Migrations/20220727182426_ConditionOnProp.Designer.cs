@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PropertyManager.Db;
 
@@ -11,9 +12,10 @@ using PropertyManager.Db;
 namespace PropertyManager.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220727182426_ConditionOnProp")]
+    partial class ConditionOnProp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,19 +62,9 @@ namespace PropertyManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastLoggedIn")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -82,7 +74,7 @@ namespace PropertyManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ResidentId")
+                    b.Property<long?>("ResidentId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -104,15 +96,14 @@ namespace PropertyManager.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("MediaType")
                         .HasColumnType("int");
 
-                    b.Property<long>("PropertyId")
+                    b.Property<long?>("PropertyId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -139,7 +130,7 @@ namespace PropertyManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("ResidentId")
+                    b.Property<long?>("ResidentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Title")
@@ -180,6 +171,10 @@ namespace PropertyManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordSalt")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -260,31 +255,21 @@ namespace PropertyManager.Migrations
                 {
                     b.HasOne("PropertyManager.Models.Resident", null)
                         .WithMany("Guests")
-                        .HasForeignKey("ResidentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ResidentId");
                 });
 
             modelBuilder.Entity("PropertyManager.Models.Media", b =>
                 {
-                    b.HasOne("PropertyManager.Models.Property", "Property")
+                    b.HasOne("PropertyManager.Models.Property", null)
                         .WithMany("Mediae")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Property");
+                        .HasForeignKey("PropertyId");
                 });
 
             modelBuilder.Entity("PropertyManager.Models.Property", b =>
                 {
-                    b.HasOne("PropertyManager.Models.Resident", "Resident")
+                    b.HasOne("PropertyManager.Models.Resident", null)
                         .WithMany("Properties")
-                        .HasForeignKey("ResidentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Resident");
+                        .HasForeignKey("ResidentId");
                 });
 
             modelBuilder.Entity("PropertyManager.Models.Ticket", b =>

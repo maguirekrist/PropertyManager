@@ -1,0 +1,25 @@
+@using PropertyManager.Utility
+@model Alert
+
+<h1 class="fs-1">Create Alert</h1>
+
+<form asp-controller="Admin" asp-action="NewAlert" method="post">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Title</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger text-sm"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Priority" class="form-label">Priority</label>
+        <select asp-items="Html.GetEnumSelectList<Priority>()" asp-for="Priority" class="form-select">
+        </select>
+        <span asp-validation-for="Priority" class="text-danger text-sm"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Description</label>
+        <textarea asp-for="Description" class="form-control">
+         </textarea>
+        <span asp-validation-for="Description" class="text-danger text-sm"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

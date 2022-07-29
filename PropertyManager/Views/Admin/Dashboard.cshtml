@@ -1,0 +1,69 @@
+@using PropertyManager.Utility
+@model AdminIndexViewModel
+@{
+    var conditionDict = new Dictionary<Condition, (string Display, string Color)>
+    {
+        { Condition.GOOD, ("Good", "success") },
+        { Condition.LOST, ("Missing", "warning")},
+        { Condition.DAMAGED, ("Damaged", "danger")},
+        { Condition.STOLEN, ("Stolen", "danger")},
+        { Condition.SALE, ("For Sale", "primary")}
+    };
+    
+    var priorityDict = new Dictionary<Priority, string>
+    {
+        { Priority.LOW, "secondary" },
+        { Priority.MED , "warning" },
+        { Priority.HIGH , "danger" }
+    };
+}
+
+@if (Model.ActiveAlert != null)
+{
+    <div class="my-4 position-relative alert alert-@priorityDict.GetValueOrDefault(Model.ActiveAlert.Priority)">
+        <h4 class="fs-4 mb-1 fw-bold ">@Model.ActiveAlert.Title</h4>
+        <div class="mb-2 fst-italic fs-6">@Model.ActiveAlert.CreatedOn.ToLongDateString()</div>
+        <p class="mb-0">@Model.ActiveAlert.Description</p>
+        <a class="position-absolute bottom-0 end-0 btn btn-danger" asp-controller="Admin" asp-action="DeleteAlert" asp-route-id="@Model.ActiveAlert.Id">Delete</a>
+    </div>
+}
+
+<div class="d-flex align-items-center my-4">
+    <div>
+        <h1 class="fs-1">Admin Portal</h1>
+    </div>
+    <div class="ms-auto">
+        <a asp-controller="Admin" asp-action="NewAlert" class="btn btn-primary">New Alert</a> 
+    </div>
+</div>
+
+<h2 class="fs-3">Properties</h2>
+@if (Model != null && Model.Properties.Count > 0)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Condition</th>
+            <th scope="col">Created On</th>
+            <th scope="col">Resident</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (Property property in Model.Properties)
+        {
+            <tr>
+                <th scope="row">@property.Title</th>
+                <td class="text-@conditionDict.GetValueOrDefault(@property.Condition).Color">@conditionDict.GetValueOrDefault(@property.Condition).Display</td>
+                <td>@property.CreatedOn.Date.ToLongDateString()</td>
+                <td>@property.Resident.FirstName @property.Resident.LastName</td>
+                <td class="flex">
+                    <a asp-controller="Property" asp-action="ViewProperty" asp-route-propertyId="@property.Id" class="link-primary">View</a>
+                    <a asp-controller="Property" asp-action="DeleteProperty" asp-route-id="@property.Id" class="link-danger">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

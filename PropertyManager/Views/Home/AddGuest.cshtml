@@ -1,0 +1,35 @@
+@model GuestViewModel
+@{
+    var error = TempData["Error"] as string;  
+}
+<h1 class="fs-1">Add New Guest</h1>
+@if (!string.IsNullOrEmpty(error))
+{
+    <h5 class="alert alert-danger">@error</h5>
+}
+<form asp-controller="Home" asp-action="AddGuest" method="post">
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger text-sm"></span>
+    </div>
+    <div class="row row-cols-2 mb-3">
+        <div class="col-12 col-md-6">
+            <label asp-for="FirstName" class="form-label">First Name</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger text-sm"></span>            
+        </div>
+        <div class="col-12 col-md-6">
+            <label asp-for="LastName" class="form-label">First Name</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger text-sm"></span>        
+        </div> 
+    </div>
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label">Password</label>
+        <input asp-for="Password" class="form-control"/>
+        <div class="form-text">Guests will use this password and email to log in.</div>
+        <span asp-validation-for="Password" class="text-danger text-sm"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

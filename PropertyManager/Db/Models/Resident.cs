@@ -1,22 +1,24 @@
 
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 
 namespace PropertyManager.Models
 {
+	
 	public class Resident
 	{
 		public long Id { get; set; }
 		public string Email { get; set; }
 		public string LastName { get; set; }
 		public string FirstName { get; set; }
-
 		public DateTime CreatedOn { get; set; } = DateTime.Now;
-		
+
 		public string Password { get; set; }
-		public string PasswordSalt { get; set; }
-		
-		public ICollection<Property> Properties { get; set; }
-	
+
+		public IEnumerable<Property> Properties { get; set; }
+		public IEnumerable<Ticket> Tickets { get; set; }
+		public IEnumerable<Guest> Guests { get; set; }
+
 		public bool isAdmin { get; set; } = false;
 		
 		public Resident()
@@ -26,15 +28,14 @@ namespace PropertyManager.Models
 
 		public static Resident CreateResident(RegisterViewModel resident)
 		{
-			Utility.Security.CreatePasswordHash(resident.Password, out byte[] passHash, out byte[] passSalt);
-
+			
+				
 			return new Resident
 			{
 				Email = resident.Email,
 				FirstName = resident.FirstName,
 				LastName = resident.LastName,
-				Password = System.Text.Encoding.UTF8.GetString(passHash),
-				PasswordSalt = System.Text.Encoding.UTF8.GetString(passSalt)
+				Password = BCrypt.Net.BCrypt.HashPassword(resident.Password)
 			};
 		}
 

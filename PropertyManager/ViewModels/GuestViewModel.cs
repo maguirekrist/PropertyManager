@@ -2,12 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PropertyManager.Models;
 
-public class LoginViewModel
+public class GuestViewModel
 {
     [EmailAddress]
-    [Required]
     public string Email { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
     [DataType(DataType.Password)]
-    [Required]
+    [MinLength(4)]
     public string Password { get; set; }
 }

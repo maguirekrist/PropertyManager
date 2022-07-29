@@ -11,7 +11,6 @@ using PropertyManager.Models;
 
 namespace PropertyManager.Controllers;
 
-[ApiController]
 [Route("[controller]")]
 public class AuthController : Controller
 {
@@ -41,22 +40,14 @@ public class AuthController : Controller
     {
         if(ModelState.IsValid)
         {
-
             var user = Resident.CreateResident(request);
-            await _dbContext.Residents.AddAsync(user);
+            _dbContext.Residents.Add(user);
             await _dbContext.SaveChangesAsync();
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim("UserId", user.Id.ToString())
-            };
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-            await HttpContext.SignInAsync(claimsPrincipal);
+            await SignInUser(user);
             return Redirect("/");
-        } else
-        {
-            return View("register");
         }
+
+        return View();
     }
 
     [HttpGet("logout")]
@@ -76,26 +67,38 @@ public class AuthController : Controller
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromForm] LoginViewModel request, [FromQuery] string? returnUrl)
     {
-        
-
-        Resident user = await _dbContext.Residents.Where(val => val.Email == request.Email).FirstOrDefaultAsync();
-        if (user != null && Utility.Security.VerifyPasswordHash(request.Password, System.Text.Encoding.UTF8.GetBytes(user.Password), System.Text.Encoding.UTF8.GetBytes(user.PasswordSalt)))
+        if (ModelState.IsValid)
         {
-            List<Claim> claims = new List<Claim>
+            var user = await _dbContext.Residents.Where(val => val.Email == request.Email).FirstOrDefaultAsync();
+            var isValidPass = user != null && BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+            if (user != null && isValidPass)
             {
-                new Claim("UserId", user.Id.ToString())
-            };
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-            await HttpContext.SignInAsync(claimsPrincipal);
-            return Redirect(returnUrl);   
-        }
-        else
-        {
+                await SignInUser(user);
+                return Redirect("/");   
+            }
             TempData["Error"] = "Invalid username or password.";
-            return View("login");
+            return View();
         }
+        TempData["Error"] = "Invalid username or password.";
+        return View();
     }
 
+    [HttpGet("denied")]
+    public IActionResult Denied()
+    {
+        return View();
+    }
 
+    private async Task SignInUser(Resident user)
+    {   
+        List<Claim> claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
+            new Claim("UserId", user.Id.ToString()),
+            new Claim(ClaimTypes.Role, user.isAdmin ? "Administrator" : "Resident")
+        };
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+        await HttpContext.SignInAsync(claimsPrincipal);
+    }
 }   

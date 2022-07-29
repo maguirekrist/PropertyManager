@@ -1,10 +1,10 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@{
-    @model LoginViewModel
+@{    
     var returnUrl = ViewData["ReturnUrl"] as string;
     var error = TempData["Error"] as string;
+    @model LoginViewModel
 }
 <h1>Login</h1>
 <p>
@@ -14,7 +14,7 @@
 {
     <h5 class="alert alert-danger">@error</h5>
 }
-<form asp-controller="Auth" asp-action="login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+<form asp-controller="Auth" asp-action="login" asp-route-returnurl="@returnUrl" method="post">
     <div class="mb-3">
         <label asp-for="Email" class="form-label">Email</label>
         <input asp-for="Email" class="form-control" />

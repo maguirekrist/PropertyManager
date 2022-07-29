@@ -1,0 +1,28 @@
+@using System.Security.Cryptography
+@model Property
+@{
+}
+
+<div class="my-4">
+   <div class="d-flex align-items-center">
+      <div>
+         <h1 class="fs-2">@Model.Title</h1>
+      </div>
+      <div class="d-flex ms-auto">
+         <a class="btn btn-primary" asp-controller="Property" asp-action="EditProperty" asp-route-id="@Model.Id">Edit</a>
+         <a class="btn btn-danger ms-2" asp-controller="Property" asp-action="DeleteProperty" asp-route-id="@Model.Id">Delete</a>
+      </div>
+   </div>
+   <div class="">
+      
+      <h2 class="fs-4">Images</h2>
+      <div class="row gap-4">
+         @foreach (Media mediaItem in Model.Mediae)
+         {
+            <div class="col-lg-4">
+               <img class="w-100 mb-2 border shadow-sm rounded" src="data:image/@mediaItem.FileType;base64,@Convert.ToBase64String(mediaItem.Data)"/>
+            </div>
+         }
+      </div>
+   </div>
+</div>

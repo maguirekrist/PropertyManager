@@ -13,11 +13,12 @@ namespace PropertyManager.Models
 	{
 		public long Id { get; set; }
 		public MediaTypes MediaType { get; set; }
-		public string url { get; set; }
-
-		public Media()
-		{
-		}
+		public byte[] Data { get; set; }
+		
+		public string FileType { get; set; }
+		
+		public long PropertyId { get; set; }
+		public Property Property { get; set; }
 	}
 }
 
